@@ -1,5 +1,5 @@
 # Slideshow
-This is a slideshow in HTML / JS which shows random images / videos of an existing files list beforehand.  
+This is a slideshow in HTML / JS which shows random images / videos of an existing files list.  
 
 ## Current version features :  
 * Random slideshow of HTML5 videos webm / mp4 / ogg and any images, including gif ;  
