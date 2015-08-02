@@ -61,7 +61,6 @@ function initSlideshow() {
 
 // Choose a random file to display
 function showRandFile() {
-	console.log(nextF+" <- if = undef, there's a problem");
 	if (arrF.length != 0) {
 		console.log("Selecting a new file...");
 		var fileOk = false;
@@ -95,7 +94,6 @@ function displayFile(toDisplay) {
 		document.getElementById('displayF').innerHTML = '<img src="'+rootSrc+encodeURI(toDisplay)+'" alt="" />';
 	} else if (extVid.match(ext)) {
 		document.getElementById('displayF').innerHTML = '<video controls autoplay id="vid"><source src="'+rootSrc+encodeURI(toDisplay)+'" type="video/'+ext+'"></video>';
-		console.log("Pause status : "+pause);
 		if (pause == false) {
 			console.log("Video displayed, starting pause.");
 			setPause(); // Putting the slideshow in pause mode for the video
