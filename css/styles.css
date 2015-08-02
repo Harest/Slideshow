@@ -1,0 +1,6 @@
+body { height: 100%; background-color:#202020; color:#fff; }
+#ctrls, #displayF { width: 100%; position: fixed; }
+#ctrls { bottom: 2px; height: 24px; text-align: center; }
+#displayF { bottom: 30px; }
+#displayF img, #displayF video { display: block; margin: 0 auto; }
+#displayF img { max-height: 880px; min-width: 600px; }
