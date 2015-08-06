@@ -1,5 +1,6 @@
 # Slideshow
 This is a slideshow in HTML / JS which shows random images / videos of an existing files list.  
+[Online version available here](http://www.i-volve.net/_lab/slideshow/).
 
 ## Current version features :  
 * Random slideshow of HTML5 videos webm / mp4 / ogg and any images, including gif ;  
