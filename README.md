@@ -16,15 +16,12 @@ I didn't find any soft able to display pictures including gif properly in a slid
 ## How it works ?  
 Like i said, it's in html/js. Details and editable variables can be found in the js/main.js file. I'll copy details here too :  
 > HOW IT WORKS  
-	First, since there's issues running this without server (via file:// for instance),
-	install one with WampServer or anything like that. You'll need to
-	configure the DocumentRoot parameter in httpd.conf (Apache config file) 
-	in a way your server will be able to access the files.
-	
->	Secondly, you need a .txt with one filepath you want to see / line.
+	You need a .txt with one filepath you want to see / line.
 	It can be any image format including gif, and any video format supported by html5.
 	In Windows for instance, you can use something like this on a directory :
-	dir "D:\Documents\Images" /A-D /S /b /-p /o:gen >List_Files.txt
+	dir "D:\Documents\Images" /A-D /S /b /-p /o:gen >List_Files.txt  
+	
+> NB : If you're using the script locally via file://, you may need to [follow these advices](http://kb.mozillazine.org/Links_to_local_pages_do_not_work).
 
 > CONTROLS  
 	Left arrow : Previous file  
