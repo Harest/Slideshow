@@ -68,7 +68,7 @@ function showRandFile() {
 		var re = /(?:\.([^.]+))?$/;
 		// Select a random file
 		while (fileOk != true) {
-			var randF = Math.floor(Math.random()*(arrF.length-1));
+			var randF = Math.floor(Math.random()*(arrF.length));
 			var toDisplay = arrF[randF];
 			ext = re.exec(toDisplay)[1].toLowerCase();
 			if (extE.match(ext) == null) fileOk = true;
