@@ -1,14 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Slideshow - v0.11</title>
+	<title>Slideshow - v0.12</title>
 	<meta charset="utf-8">
 	<link rel="stylesheet" href="css/styles.css" type="text/css" media="screen" />
 </head>
 
 <body>
 	<div id ="ctrls">List : <input type="file" id="files" name="file" /> | <input type="button" value="Pause" name="pause" id="pause_button" /> | Timer : <span id="timer"></span> | <a href="https://github.com/Harest/Slideshow" target="_blank">Source</a></div>
-	<div id="displayF"></div>
+	<div id="displayF">
+		<div><h1>Introduction</h1>
+		<p>Hi,<br />This is a slideshow in HTML / JS which shows random images / videos of an existing files list.</p>
+		<p>All you have to do is to generate a list of files you want to see, then clicking "Browse" below to select it to start the slideshow. In Windows you can use this command for instance :<br /><blockquote>dir "D:\Documents\Images" /A-D /S /b /-p /o:gen >List_Files.txt</blockquote></p>
+		<h1>Controls</h1>
+		<ul>
+			<li>Left arrow : Previous file</li>
+			<li>Right arrow : Next file (random if not already existing)</li>
+			<li>Up/Down arrow : Increase/Decrease the timer</li>
+			<li>Spacebar : Pause (be careful to unfocus the "Browse" button first)</li>
+		</ul>
+		</div>
+	</div>
 
 	<script type="text/javascript" src="js/main.js"></script>
 </body>
