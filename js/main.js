@@ -20,14 +20,16 @@ var arrFS = new Array(); // Files displayed
 var nextF; // Var used to display the next file or not with Interval
 var nF = 0; // Current number of the file displayed ; Used to go back in the history
 var precFunc; // Precedent function to prevent too much reset of setInterval
+var maxHeight = window.innerHeight-30; // Maximum height an image should be to avoid overflow
 // ---------- VARIABLES BELOW CAN BE MODIFIED
-var extE = "txt,zip,js,css,db,htm,swf"; // Extensions excluded
+var extE = "txt,zip,js,css,db,htm,swf,wmv,avi,mpg,mpeg,mkv,flv,nfo,mp3,wav"; // Extensions excluded
 var extImg = "jpg,jpeg,gif,png,bmp"; // Images Extensions
 var extVid = "mp4,webm,ogg"; // Video Extensions
 var timer = 5000; // Set default timer to 5 seconds
 var pause = false; // Pause disabled by default
-var rootSrc = "//127.0.0.1:8080/"; // This is the root directory of your files, can be empty if not needed
-var regDrive = /D:\\/gi; // RegExp to remove the drive letter of all the filenames, change the D:\ if needed
+var rootSrc = "file://"; // This is the root directory of your files, can be empty if not needed
+var regDrive = null; // RegExp to remove the drive letter of all the filenames if needed - eg: /D:\\/gi
+var minWidth = 600; // Minimum width an image should be in pixels
 // ---------- VARIABLES ABOVE CAN BE MODIFIED
 
 // Get the files list
@@ -74,10 +76,11 @@ function showRandFile() {
 			if (extE.match(ext) == null) fileOk = true;
 			//delete arrF[randF];
 		}
+		
+		if (regDrive != null) toDisplay = toDisplay.replace(regDrive,"");
+		toDisplay = toDisplay.replace(/\\/gi,"/");
 		console.log("File found : "+toDisplay);
 		
-		toDisplay = toDisplay.replace(regDrive,"");
-		toDisplay = toDisplay.replace(/\\/gi,"/");
 		arrFS.push(toDisplay);
 		// Display the file
 		displayFile(toDisplay);
@@ -91,7 +94,7 @@ function displayFile(toDisplay) {
 	var re = /(?:\.([^.]+))?$/;
 	var ext = re.exec(toDisplay)[1].toLowerCase();
 	if (extImg.match(ext)) {
-		document.getElementById('displayF').innerHTML = '<img src="'+rootSrc+encodeURI(toDisplay)+'" alt="" />';
+		document.getElementById('displayF').innerHTML = '<img src="'+rootSrc+encodeURI(toDisplay)+'" alt="" id="cImg" onload="updateImgDim();" style="max-height: '+maxHeight+'px; min-width: '+minWidth+'px;" />';
 	} else if (extVid.match(ext)) {
 		document.getElementById('displayF').innerHTML = '<video controls autoplay id="vid"><source src="'+rootSrc+encodeURI(toDisplay)+'" type="video/'+ext+'"></video>';
 		if (pause == false) {
@@ -178,6 +181,26 @@ function setTimer(add) {
 		console.log(nextF);
 	}
 	document.getElementById('timer').innerHTML = timer/1000 + " seconds";
+}
+
+// Update dimensions properties for the image
+function updateImgDim() {
+	// Update maximum height to avoid overflow
+	var cMaxHeight = window.innerHeight-30;
+	if (cMaxHeight != maxHeight) {
+		maxHeight = cMaxHeight;
+		console.log("CSS Updated with max-height = "+maxHeight);
+	}
+	// Keeping aspect-ratio of the image
+	var cImg = document.getElementById("cImg");
+	var imgW = cImg.naturalWidth;
+	var imgH = cImg.naturalHeight;
+	if (imgH > maxHeight) {
+		var diffH = (maxHeight-imgH)/imgH;
+		var newWidth = parseInt(imgW*(1+diffH));
+		if (minWidth > newWidth) cImg.style.minWidth = "";
+		cImg.style.width = newWidth;
+	}
 }
 
 // Keystrokes
