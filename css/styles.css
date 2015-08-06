@@ -5,3 +5,5 @@ body { height: 100%; background-color:#202020; color:#fff; font: 0.8em "Trebuche
 #cImg, #vid { display: block; margin: 0 auto; }
 a { color: #777; text-decoration: none; }
 a:hover { color: #fff; text-decoration: underline; }
+#displayF div { width: 50%; margin: 0 auto; text-align: justify; background-color: rgba(99, 99, 99, 0.3); padding: 5px; border-radius: 5px; }
+h1 { font-size: 14pt; font-variant: small-caps; }
