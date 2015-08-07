@@ -28,5 +28,6 @@ Like i said, it's in html/js. Details and editable variables can be found in the
 	Right arrow : Next file (random if not already existing)  
 	Up/Down arrow : Increase/Decrease the timer  
 	Spacebar : Pause (be careful to unfocus the "Browse" button first)
+	Echap : Display/Hide the config window
 
 *Note the code is probably not great. I didn't code for a while.*

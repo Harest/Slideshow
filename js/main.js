@@ -12,6 +12,7 @@ CONTROLS
 	Right arrow : Next file (random if not already existing)
 	Up/Down arrow : Increase/Decrease the timer
 	Spacebar : Pause (be careful to unfocus the "Browse" button first)
+	Echap : Display/Hide the config window
 */
 var arrF = new Array(); // Files list
 var arrFS = new Array(); // Files displayed
@@ -28,6 +29,15 @@ var pause = false; // Pause disabled by default
 var rootSrc = "file://"; // This is the root directory of your files, can be empty if not needed
 var regDrive = null; // RegExp to remove the drive letter of all the filenames if needed - eg: /D:\\/gi
 var minWidth = 600; // Minimum width an image should be in pixels
+var expireDays = 30; // How long until the config cookie will expire
+var keyShortcuts = {
+pause: 32,
+prev: 37,
+next: 39,
+incTimer: 38,
+decTimer: 40,
+configW: 27
+};
 // ---------- VARIABLES ABOVE CAN BE MODIFIED
 
 // Get the files list
@@ -201,16 +211,73 @@ function updateImgDim() {
 	}
 }
 
+// Display / Hide the config window
+function showWindowConfig() {
+	if (document.getElementById('intro') != undefined) document.getElementById('intro').style.visibility = "hidden";
+	if (document.getElementById('configW').style.visibility == "hidden") {
+		document.getElementById('confTimer').value = timer/1000;
+		document.getElementById('confExtImg').value = extImg;
+		document.getElementById('confSaved').src = "img/space.png";
+		document.getElementById('configW').style.visibility = "visible";
+	} else {
+		document.getElementById('configW').style.visibility = "hidden";
+	}
+}
+
+// Saving the configuration (cookie)
+function saveConfig() {
+	// TODO check and save all config parameters
+	var form = document.forms['configure'];
+	var newTimer = parseInt(form['confTimer'].value);
+	timer = (newTimer > 1) ? newTimer*1000 : 1000;
+	writeCookie() ? document.getElementById('confSaved').src = "img/check.png" : document.getElementById('confSaved').src = "img/error.png";
+	setTimeout(function(){ document.getElementById('confSaved').src = "img/space.png" }, 2000);
+}
+
+// Return the config in a JSON String
+function serializeConfig() {
+	var data = '{"timer":'+timer+'}';
+	// TODO adding all config parameters
+	return data;
+}
+
+// Writing the config cookie
+function writeCookie() {
+    var d = new Date();
+    d.setTime(d.getTime() + (expireDays*24*60*60*1000));
+	document.cookie = encodeURI(serializeConfig())+';path=/;expires='+d.toUTCString();
+	if (document.cookie) {
+		console.log("Config saved in a cookie.");
+		return true;
+	}
+	return false;
+}
+
+// Checking and reading the config cookie
+function readCookie() {
+	var c = document.cookie.split(';');
+	if (c[0]) {
+		data = JSON.parse(decodeURI(c[0]));
+		var newTimer = parseInt(data['timer']);
+		timer = (newTimer > 1000) ? newTimer : 1000;
+		return true;
+	}
+	return false;
+}
+
 // Keystrokes
 function keyStrokes(event) {
 	var ek = event.keyCode;
-	if (ek == 32) setPause(); // spacebar
-	if (ek == 37) showPrevFile(); // right arrow
-	if (ek == 39) showNextFile(); // right arrow
-	if (ek == 38) setTimer(+1000); // up arrow
-	if (ek == 40) setTimer(-1000); // down arrow
+	if (ek == keyShortcuts.pause) setPause(); // spacebar
+	if (ek == keyShortcuts.prev) showPrevFile(); // right arrow
+	if (ek == keyShortcuts.next) showNextFile(); // right arrow
+	if (ek == keyShortcuts.incTimer) setTimer(+1000); // up arrow
+	if (ek == keyShortcuts.decTimer) setTimer(-1000); // down arrow
+	if (ek == keyShortcuts.configW) showWindowConfig(); // echap
 }
 
 document.getElementById('files').addEventListener('change', handleFileSelect, false);
 document.getElementById('pause_button').addEventListener('click', setPause, false);
+document.getElementById('config_img').addEventListener('click', showWindowConfig, false);
+document.getElementById('config_close').addEventListener('click', showWindowConfig, false);
 document.onkeydown = keyStrokes;
