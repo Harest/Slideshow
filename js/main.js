@@ -79,22 +79,6 @@ function initSlideshow() {
 	}
 }
 
-<<<<<<< HEAD
-// Choose a random file to display
-function showRandFile() {
-	if (arrF.length != 0) {
-		console.log("Selecting a new file...");
-		var fileOk = false;
-		var ext;
-		var re = /(?:\.([^.]+))?$/;
-		// Select a random file
-		while (fileOk != true) {
-			var randF = Math.floor(Math.random()*(arrF.length));
-			var toDisplay = arrF[randF];
-			ext = re.exec(toDisplay)[1].toLowerCase();
-			if (extE.match(ext) == null) fileOk = true;
-			//delete arrF[randF];
-=======
 // Display the current file
 function showCurrentFile() {
 	var nbFiles = arrF.length;
@@ -104,7 +88,6 @@ function showCurrentFile() {
 			arrFS = [];
 			nF = 0;
 			console.log("End of files queue reached. Slideshow shuffled and reset.");
->>>>>>> origin/dev
 		}
 		var toDisplay = arrF[nF];
 		
