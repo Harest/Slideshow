@@ -8,7 +8,6 @@ This is a slideshow in HTML / JS which shows random images / videos of an existi
 
 ## Improvements ideas :  
 * UI for custom variables, and maybe more user-ajustable stuff (max-height, min-width, bottom or top, etc.) ;
-* Include more video formats than just the 3 ones <video> tag supports ;
 
 ## Why ?  
 I didn't find any soft able to display pictures including gif properly in a slideshow. XnView for instance isn't able to loop gif and will skip to the next file at the end of the animation.

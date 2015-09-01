@@ -22,7 +22,8 @@ var precFunc; // Precedent function to prevent too much reset of setInterval
 var maxHeight = window.innerHeight-30; // Maximum height an image should be to avoid overflow
 // ---------- VARIABLES BELOW CAN BE MODIFIED
 var extImg = "jpg,jpeg,gif,png,bmp"; // Images Extensions
-var extVid = "mp4,webm,ogg"; // Video Extensions
+var extVid = "mp4,webm,ogg"; // HTML5 Video Extensions
+var extVidObj = "avi,wmv,flv,divx,mpg,mpeg"; // Object Video Extensions
 var timer = 5000; // Set default timer to 5 seconds
 var pause = false; // Pause disabled by default
 var rootSrc = "file://"; // This is the root directory of your files, can be empty if not needed
@@ -50,7 +51,7 @@ function handleFileSelect(evt) {
 		// Extensions checking
 		for (var i = 0; i < nbItems; i++) {
 			var ext = tmpArray[i].split('.').pop().toLowerCase();
-			if (extImg.match(ext) || extVid.match(ext)) arrF.push(tmpArray[i]);
+			if (extImg.match(ext) || extVid.match(ext) || extVidObj.match(ext)) arrF.push(tmpArray[i]);
 		}
 		// Ramdomizing the array
 		arrF = randArray(arrF);
@@ -110,6 +111,13 @@ function displayFile(toDisplay) {
 		document.getElementById('displayF').innerHTML = '<img src="'+rootSrc+encodeURI(toDisplay)+'" alt="" id="cImg" onload="updateImgDim();" style="max-height: '+maxHeight+'px; min-width: '+minWidth+'px;" />';
 	} else if (extVid.match(ext)) {
 		document.getElementById('displayF').innerHTML = '<video controls autoplay id="vid"><source src="'+rootSrc+encodeURI(toDisplay)+'" type="video/'+ext+'"></video>';
+		if (pause == false) {
+			console.log("Video displayed, starting pause.");
+			setPause(); // Putting the slideshow in pause mode for the video
+			document.getElementById('vid').addEventListener('ended', videoEnded, false); // Release the slideshow at the end of the video
+		}
+	} else if (extVidObj.match(ext)) {
+		document.getElementById('displayF').innerHTML = '<object id="vid" data="'+rootSrc+encodeURI(toDisplay)+'" type="video/'+ext+'" height="'+maxHeight+'" width="'+parseInt((maxHeight/9)*16)+'"><param name="autoplay" value="true"></object>';
 		if (pause == false) {
 			console.log("Video displayed, starting pause.");
 			setPause(); // Putting the slideshow in pause mode for the video
@@ -236,6 +244,7 @@ function saveConfig() {
 	var form = document.forms['configure'];
 	var newTimer = parseInt(form['confTimer'].value);
 	timer = (newTimer > 1) ? newTimer*1000 : 1000;
+	extImg = form['confExtImg'].value;
 	var confSaved = document.getElementById('confSaved');
 	writeCookie() ? confSaved.src = "img/check.png" : confSaved.src = "img/error.png";
 	setTimeout(function(){ confSaved.src = "img/space.png" }, 2000);
@@ -243,7 +252,7 @@ function saveConfig() {
 
 // Return the config in a JSON String
 function serializeConfig() {
-	var data = '{"timer":'+timer+'}';
+	var data = '{"timer":"'+timer+'", "extImg":"'+extImg+'"}';
 	// TODO adding all config parameters
 	return data;
 }
@@ -252,7 +261,7 @@ function serializeConfig() {
 function writeCookie() {
     var d = new Date();
     d.setTime(d.getTime() + (expireDays*24*60*60*1000));
-	document.cookie = encodeURI(serializeConfig())+';path=/;expires='+d.toUTCString();
+	document.cookie = serializeConfig()+';path=/;expires='+d.toUTCString();
 	if (document.cookie) {
 		console.log("Config saved in a cookie.");
 		return true;
@@ -264,9 +273,10 @@ function writeCookie() {
 function readCookie() {
 	var c = document.cookie.split(';');
 	if (c[0]) {
-		data = JSON.parse(decodeURI(c[0]));
+		data = JSON.parse(c[0]);
 		var newTimer = parseInt(data['timer']);
 		timer = (newTimer > 1000) ? newTimer : 1000;
+		extImg = data['extImg'];
 		return true;
 	}
 	return false;
@@ -301,3 +311,4 @@ document.getElementById('pause_button').addEventListener('click', setPause, fals
 document.getElementById('config_img').addEventListener('click', showWindowConfig, false);
 document.getElementById('config_close').addEventListener('click', showWindowConfig, false);
 document.onkeydown = keyStrokes;
+readCookie();
