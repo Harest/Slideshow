@@ -12,15 +12,15 @@ CONTROLS
 	Right arrow : Next file (random if not already existing)
 	Up/Down arrow : Increase/Decrease the timer
 	Spacebar : Pause (be careful to unfocus the "Browse" button first)
+	Echap : Display/Hide the config window
 */
-var arrF = new Array(); // Files list
-var arrFS = new Array(); // Files displayed
+var arrF = []; // Files list
+var arrFS = []; // Files displayed
 var nextF; // Var used to display the next file or not with Interval
 var nF = 0; // Current number of the file displayed ; Used to go back in the history
 var precFunc; // Precedent function to prevent too much reset of setInterval
 var maxHeight = window.innerHeight-30; // Maximum height an image should be to avoid overflow
 // ---------- VARIABLES BELOW CAN BE MODIFIED
-var extE = "txt,zip,js,css,db,htm,swf,wmv,avi,mpg,mpeg,mkv,flv,nfo,mp3,wav"; // Extensions excluded
 var extImg = "jpg,jpeg,gif,png,bmp"; // Images Extensions
 var extVid = "mp4,webm,ogg"; // Video Extensions
 var timer = 5000; // Set default timer to 5 seconds
@@ -28,6 +28,15 @@ var pause = false; // Pause disabled by default
 var rootSrc = "file://"; // This is the root directory of your files, can be empty if not needed
 var regDrive = null; // RegExp to remove the drive letter of all the filenames if needed - eg: /D:\\/gi
 var minWidth = 600; // Minimum width an image should be in pixels
+var expireDays = 30; // How long until the config cookie will expire
+var keyShortcuts = {
+pause: 32,
+prev: 37,
+next: 39,
+incTimer: 38,
+decTimer: 40,
+configW: 27
+};
 // ---------- VARIABLES ABOVE CAN BE MODIFIED
 
 // Get the files list
@@ -36,7 +45,16 @@ function handleFileSelect(evt) {
 	var reader = new FileReader();
 	
 	reader.onload = function(theFile) {
-		arrF = theFile.target.result.split(/\r\n|\r|\n/g);
+		var tmpArray = theFile.target.result.split(/\r\n|\r|\n/g);
+		var nbItems = tmpArray.length;
+		// Extensions checking
+		for (var i = 0; i < nbItems; i++) {
+			var ext = tmpArray[i].split('.').pop().toLowerCase();
+			if (extImg.match(ext) || extVid.match(ext)) arrF.push(tmpArray[i]);
+		}
+		// Ramdomizing the array
+		arrF = randArray(arrF);
+		
 		console.log(arrF.length+' files found.');
 		initSlideshow();
 	};
@@ -45,20 +63,23 @@ function handleFileSelect(evt) {
 
 // Start the slideshow
 function initSlideshow() {
-	var nfMax = arrFS.length;
-	console.log("Starting the Slideshow. Timer : "+timer+" nF : "+nF+" nFMax : "+nfMax);
-	if (nfMax == 0 || nfMax == nF) {
-		if (nfMax == nF && nfMax != 0) clearInterval(nextF);
-		if (nfMax == 0) setTimer(0);
-		nextF = setInterval(showRandFile, timer);
-		showRandFile(); // First display
-		document.getElementById('files').blur();
-	} else {
-		clearInterval(nextF);
-		nextF = setInterval(showNextFile, timer);
+	if (arrF.length != 0) {
+		var nfMax = arrFS.length;
+		console.log("Starting the Slideshow. Timer : "+timer+" nF : "+nF+" nFMax : "+nfMax);
+		if (nfMax == 0 || nfMax == nF) {
+			if (nfMax == nF && nfMax != 0) clearInterval(nextF);
+			if (nfMax == 0) setTimer(0);
+			nextF = setInterval(showCurrentFile, timer);
+			showCurrentFile(); // First display
+			document.getElementById('files').blur();
+		} else {
+			clearInterval(nextF);
+			nextF = setInterval(showNextFile, timer);
+		}
 	}
 }
 
+<<<<<<< HEAD
 // Choose a random file to display
 function showRandFile() {
 	if (arrF.length != 0) {
@@ -73,24 +94,35 @@ function showRandFile() {
 			ext = re.exec(toDisplay)[1].toLowerCase();
 			if (extE.match(ext) == null) fileOk = true;
 			//delete arrF[randF];
+=======
+// Display the current file
+function showCurrentFile() {
+	var nbFiles = arrF.length;
+	if (nbFiles != 0) {
+		if (nbFiles-1 < nF) { // Reset the slideshow if we reach the end.
+			arrF = randArray(arrF);
+			arrFS = [];
+			nF = 0;
+			console.log("End of files queue reached. Slideshow shuffled and reset.");
+>>>>>>> origin/dev
 		}
+		var toDisplay = arrF[nF];
 		
 		if (regDrive != null) toDisplay = toDisplay.replace(regDrive,"");
 		toDisplay = toDisplay.replace(/\\/gi,"/");
-		console.log("File found : "+toDisplay);
+		console.log("Displaying file : "+toDisplay);
 		
 		arrFS.push(toDisplay);
 		// Display the file
 		displayFile(toDisplay);
 		nF++;
-		precFunc = "Rand";
+		precFunc = "Current";
 	}
 }
 
 // Display the file
 function displayFile(toDisplay) {
-	var re = /(?:\.([^.]+))?$/;
-	var ext = re.exec(toDisplay)[1].toLowerCase();
+	var ext = toDisplay.split('.').pop().toLowerCase();
 	if (extImg.match(ext)) {
 		document.getElementById('displayF').innerHTML = '<img src="'+rootSrc+encodeURI(toDisplay)+'" alt="" id="cImg" onload="updateImgDim();" style="max-height: '+maxHeight+'px; min-width: '+minWidth+'px;" />';
 	} else if (extVid.match(ext)) {
@@ -111,7 +143,7 @@ function videoEnded() {
 	setPause();
 }
 
-// Show previous file(s)
+// Show previous file(s) already displayed
 function showPrevFile() {
 	if (arrFS.length > 1 && nF > 0) {
 		console.log("Displaying previous file.");
@@ -130,7 +162,7 @@ function showPrevFile() {
 	}
 }
 
-// Show next file(s)
+// Show next file(s) already displayed
 function showNextFile() {
 	if (arrFS.length-1 > nF) {
 		console.log("Displaying next file.");
@@ -148,7 +180,7 @@ function showNextFile() {
 	} else {
 		nF = arrFS.length;
 		if (pause == true) {
-			showRandFile();
+			showCurrentFile();
 		} else {
 			initSlideshow();
 		}
@@ -175,7 +207,7 @@ function setTimer(add) {
 	console.log("New timer : "+timer);
 	if (arrFS.length > 0) {
 		clearInterval(nextF);
-		nextF = setInterval(showRandFile, timer);
+		nextF = setInterval(showCurrentFile, timer);
 		console.log(nextF);
 	}
 	document.getElementById('timer').innerHTML = timer/1000 + " seconds";
@@ -201,16 +233,88 @@ function updateImgDim() {
 	}
 }
 
+// Display / Hide the config window
+function showWindowConfig() {
+	if (document.getElementById('intro') != undefined) document.getElementById('intro').style.visibility = "hidden";
+	var configW = document.getElementById('configW');
+	if (configW.style.visibility == "hidden") {
+		document.getElementById('confTimer').value = timer/1000;
+		document.getElementById('confExtImg').value = extImg;
+		document.getElementById('confSaved').src = "img/space.png";
+		configW.style.visibility = "visible";
+	} else {
+		configW.style.visibility = "hidden";
+	}
+}
+
+// Saving the configuration (cookie)
+function saveConfig() {
+	// TODO check and save all config parameters
+	var form = document.forms['configure'];
+	var newTimer = parseInt(form['confTimer'].value);
+	timer = (newTimer > 1) ? newTimer*1000 : 1000;
+	var confSaved = document.getElementById('confSaved');
+	writeCookie() ? confSaved.src = "img/check.png" : confSaved.src = "img/error.png";
+	setTimeout(function(){ confSaved.src = "img/space.png" }, 2000);
+}
+
+// Return the config in a JSON String
+function serializeConfig() {
+	var data = '{"timer":'+timer+'}';
+	// TODO adding all config parameters
+	return data;
+}
+
+// Writing the config cookie
+function writeCookie() {
+    var d = new Date();
+    d.setTime(d.getTime() + (expireDays*24*60*60*1000));
+	document.cookie = encodeURI(serializeConfig())+';path=/;expires='+d.toUTCString();
+	if (document.cookie) {
+		console.log("Config saved in a cookie.");
+		return true;
+	}
+	return false;
+}
+
+// Checking and reading the config cookie
+function readCookie() {
+	var c = document.cookie.split(';');
+	if (c[0]) {
+		data = JSON.parse(decodeURI(c[0]));
+		var newTimer = parseInt(data['timer']);
+		timer = (newTimer > 1000) ? newTimer : 1000;
+		return true;
+	}
+	return false;
+}
+
+// Randomize an array
+function randArray(array) {
+	var itemsLeft = array.length, tmpItem, randIndex;
+	while (itemsLeft !== 0) {
+		randIndex = Math.floor(Math.random() * itemsLeft);
+		itemsLeft -= 1;
+		tmpItem = array[itemsLeft];
+		array[itemsLeft] = array[randIndex];
+		array[randIndex] = tmpItem;
+	}
+	return array;
+}
+
 // Keystrokes
 function keyStrokes(event) {
 	var ek = event.keyCode;
-	if (ek == 32) setPause(); // spacebar
-	if (ek == 37) showPrevFile(); // right arrow
-	if (ek == 39) showNextFile(); // right arrow
-	if (ek == 38) setTimer(+1000); // up arrow
-	if (ek == 40) setTimer(-1000); // down arrow
+	if (ek == keyShortcuts.pause) setPause(); // spacebar
+	if (ek == keyShortcuts.prev) showPrevFile(); // right arrow
+	if (ek == keyShortcuts.next) showNextFile(); // right arrow
+	if (ek == keyShortcuts.incTimer) setTimer(+1000); // up arrow
+	if (ek == keyShortcuts.decTimer) setTimer(-1000); // down arrow
+	if (ek == keyShortcuts.configW) showWindowConfig(); // echap
 }
 
 document.getElementById('files').addEventListener('change', handleFileSelect, false);
 document.getElementById('pause_button').addEventListener('click', setPause, false);
+document.getElementById('config_img').addEventListener('click', showWindowConfig, false);
+document.getElementById('config_close').addEventListener('click', showWindowConfig, false);
 document.onkeydown = keyStrokes;

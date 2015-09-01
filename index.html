@@ -1,24 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Slideshow - v0.12</title>
+	<title>Slideshow - v0.2</title>
 	<meta charset="utf-8">
 	<link rel="stylesheet" href="css/styles.css" type="text/css" media="screen" />
 </head>
 
 <body>
-	<div id ="ctrls">List : <input type="file" id="files" name="file" /> | <input type="button" value="Pause" name="pause" id="pause_button" /> | Timer : <span id="timer"></span> | <a href="https://github.com/Harest/Slideshow" target="_blank">Source</a></div>
+	<div id="ctrls">List : <input type="file" id="files" name="file" /> | <input type="button" value="Pause" name="pause" id="pause_button" /> | Timer : <span id="timer"></span> | <img src="img/config.png" alt="Configure" id="config_img" title="Configure" /> | <a href="https://github.com/Harest/Slideshow" target="_blank">Source</a></div>
 	<div id="displayF">
-		<div><h1>Introduction</h1>
+		<div id="intro"><h1>Introduction</h1>
 		<p>Hi,<br />This is a slideshow in HTML / JS which shows random images / videos of an existing files list.</p>
-		<p>All you have to do is to generate a list of files you want to see, then clicking "Browse" below to select it to start the slideshow. In Windows you can use this command for instance :<br /><blockquote>dir "D:\Documents\Images" /A-D /S /b /-p /o:gen >List_Files.txt</blockquote></p>
+		<p>All you have to do is to generate a list of files you want to see, then clicking "Browse" below to select it to start the slideshow. In Windows you can use this command for instance :</p><blockquote>dir "D:\Documents\Images" /A-D /S /b /-p /o:gen >List_Files.txt</blockquote>
 		<h1>Controls</h1>
 		<ul>
 			<li>Left arrow : Previous file</li>
 			<li>Right arrow : Next file (random if not already existing)</li>
 			<li>Up/Down arrow : Increase/Decrease the timer</li>
 			<li>Spacebar : Pause (be careful to unfocus the "Browse" button first)</li>
+			<li>Echap : Display/Hide the config window</li>
 		</ul>
+		</div>
+	</div>
+	<div id="configW" style="visibility: hidden;">
+		<div id="config">
+			<img src="img/close.png" alt="Close" id="config_close" title="Close" />
+			<h1>Configuration</h1>
+			<p>Here, you'll be able to edit some parameters of the slideshow.</p>
+			<form name="configure" action="" onsubmit="return false;">
+			<label for="confTimer">Timer (seconds)</label> <input type="text" id="confTimer" name="confTimer" /><br />
+			<label for="confExtImg">Images Extensions (csv)</label> <input type="text" id="confExtImg" name="confExtImg" /><br />
+			<span id="confSubmit"><img src="img/space.png" alt="" id="confSaved" width="17" /> <input type="submit" value="Save" onclick="saveConfig();" /></span>
+			</form>
+			<br class="clear" />
 		</div>
 	</div>
 
