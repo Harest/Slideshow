@@ -14,14 +14,13 @@ CONTROLS
 	Spacebar : Pause (be careful to unfocus the "Browse" button first)
 	Echap : Display/Hide the config window
 */
-var arrF = new Array(); // Files list
-var arrFS = new Array(); // Files displayed
+var arrF = []; // Files list
+var arrFS = []; // Files displayed
 var nextF; // Var used to display the next file or not with Interval
 var nF = 0; // Current number of the file displayed ; Used to go back in the history
 var precFunc; // Precedent function to prevent too much reset of setInterval
 var maxHeight = window.innerHeight-30; // Maximum height an image should be to avoid overflow
 // ---------- VARIABLES BELOW CAN BE MODIFIED
-var extE = "txt,zip,js,css,db,htm,swf,wmv,avi,mpg,mpeg,mkv,flv,nfo,mp3,wav"; // Extensions excluded
 var extImg = "jpg,jpeg,gif,png,bmp"; // Images Extensions
 var extVid = "mp4,webm,ogg"; // Video Extensions
 var timer = 5000; // Set default timer to 5 seconds
@@ -46,7 +45,16 @@ function handleFileSelect(evt) {
 	var reader = new FileReader();
 	
 	reader.onload = function(theFile) {
-		arrF = theFile.target.result.split(/\r\n|\r|\n/g);
+		var tmpArray = theFile.target.result.split(/\r\n|\r|\n/g);
+		var nbItems = tmpArray.length;
+		// Extensions checking
+		for (var i = 0; i < nbItems; i++) {
+			var ext = tmpArray[i].split('.').pop().toLowerCase();
+			if (extImg.match(ext) || extVid.match(ext)) arrF.push(tmpArray[i]);
+		}
+		// Ramdomizing the array
+		arrF = randArray(arrF);
+		
 		console.log(arrF.length+' files found.');
 		initSlideshow();
 	};
@@ -55,52 +63,49 @@ function handleFileSelect(evt) {
 
 // Start the slideshow
 function initSlideshow() {
-	var nfMax = arrFS.length;
-	console.log("Starting the Slideshow. Timer : "+timer+" nF : "+nF+" nFMax : "+nfMax);
-	if (nfMax == 0 || nfMax == nF) {
-		if (nfMax == nF && nfMax != 0) clearInterval(nextF);
-		if (nfMax == 0) setTimer(0);
-		nextF = setInterval(showRandFile, timer);
-		showRandFile(); // First display
-		document.getElementById('files').blur();
-	} else {
-		clearInterval(nextF);
-		nextF = setInterval(showNextFile, timer);
+	if (arrF.length != 0) {
+		var nfMax = arrFS.length;
+		console.log("Starting the Slideshow. Timer : "+timer+" nF : "+nF+" nFMax : "+nfMax);
+		if (nfMax == 0 || nfMax == nF) {
+			if (nfMax == nF && nfMax != 0) clearInterval(nextF);
+			if (nfMax == 0) setTimer(0);
+			nextF = setInterval(showCurrentFile, timer);
+			showCurrentFile(); // First display
+			document.getElementById('files').blur();
+		} else {
+			clearInterval(nextF);
+			nextF = setInterval(showNextFile, timer);
+		}
 	}
 }
 
-// Choose a random file to display
-function showRandFile() {
-	if (arrF.length != 0) {
-		console.log("Selecting a new file...");
-		var fileOk = false;
-		var ext;
-		var re = /(?:\.([^.]+))?$/;
-		// Select a random file
-		while (fileOk != true) {
-			var randF = Math.floor(Math.random()*(arrF.length));
-			var toDisplay = arrF[randF];
-			ext = re.exec(toDisplay)[1].toLowerCase();
-			if (extE.match(ext) == null) fileOk = true;
-			//delete arrF[randF];
+// Display the current file
+function showCurrentFile() {
+	var nbFiles = arrF.length;
+	if (nbFiles != 0) {
+		if (nbFiles-1 < nF) { // Reset the slideshow if we reach the end.
+			arrF = randArray(arrF);
+			arrFS = [];
+			nF = 0;
+			console.log("End of files queue reached. Slideshow shuffled and reset.");
 		}
+		var toDisplay = arrF[nF];
 		
 		if (regDrive != null) toDisplay = toDisplay.replace(regDrive,"");
 		toDisplay = toDisplay.replace(/\\/gi,"/");
-		console.log("File found : "+toDisplay);
+		console.log("Displaying file : "+toDisplay);
 		
 		arrFS.push(toDisplay);
 		// Display the file
 		displayFile(toDisplay);
 		nF++;
-		precFunc = "Rand";
+		precFunc = "Current";
 	}
 }
 
 // Display the file
 function displayFile(toDisplay) {
-	var re = /(?:\.([^.]+))?$/;
-	var ext = re.exec(toDisplay)[1].toLowerCase();
+	var ext = toDisplay.split('.').pop().toLowerCase();
 	if (extImg.match(ext)) {
 		document.getElementById('displayF').innerHTML = '<img src="'+rootSrc+encodeURI(toDisplay)+'" alt="" id="cImg" onload="updateImgDim();" style="max-height: '+maxHeight+'px; min-width: '+minWidth+'px;" />';
 	} else if (extVid.match(ext)) {
@@ -121,7 +126,7 @@ function videoEnded() {
 	setPause();
 }
 
-// Show previous file(s)
+// Show previous file(s) already displayed
 function showPrevFile() {
 	if (arrFS.length > 1 && nF > 0) {
 		console.log("Displaying previous file.");
@@ -140,7 +145,7 @@ function showPrevFile() {
 	}
 }
 
-// Show next file(s)
+// Show next file(s) already displayed
 function showNextFile() {
 	if (arrFS.length-1 > nF) {
 		console.log("Displaying next file.");
@@ -158,7 +163,7 @@ function showNextFile() {
 	} else {
 		nF = arrFS.length;
 		if (pause == true) {
-			showRandFile();
+			showCurrentFile();
 		} else {
 			initSlideshow();
 		}
@@ -185,7 +190,7 @@ function setTimer(add) {
 	console.log("New timer : "+timer);
 	if (arrFS.length > 0) {
 		clearInterval(nextF);
-		nextF = setInterval(showRandFile, timer);
+		nextF = setInterval(showCurrentFile, timer);
 		console.log(nextF);
 	}
 	document.getElementById('timer').innerHTML = timer/1000 + " seconds";
@@ -214,13 +219,14 @@ function updateImgDim() {
 // Display / Hide the config window
 function showWindowConfig() {
 	if (document.getElementById('intro') != undefined) document.getElementById('intro').style.visibility = "hidden";
-	if (document.getElementById('configW').style.visibility == "hidden") {
+	var configW = document.getElementById('configW');
+	if (configW.style.visibility == "hidden") {
 		document.getElementById('confTimer').value = timer/1000;
 		document.getElementById('confExtImg').value = extImg;
 		document.getElementById('confSaved').src = "img/space.png";
-		document.getElementById('configW').style.visibility = "visible";
+		configW.style.visibility = "visible";
 	} else {
-		document.getElementById('configW').style.visibility = "hidden";
+		configW.style.visibility = "hidden";
 	}
 }
 
@@ -230,8 +236,9 @@ function saveConfig() {
 	var form = document.forms['configure'];
 	var newTimer = parseInt(form['confTimer'].value);
 	timer = (newTimer > 1) ? newTimer*1000 : 1000;
-	writeCookie() ? document.getElementById('confSaved').src = "img/check.png" : document.getElementById('confSaved').src = "img/error.png";
-	setTimeout(function(){ document.getElementById('confSaved').src = "img/space.png" }, 2000);
+	var confSaved = document.getElementById('confSaved');
+	writeCookie() ? confSaved.src = "img/check.png" : confSaved.src = "img/error.png";
+	setTimeout(function(){ confSaved.src = "img/space.png" }, 2000);
 }
 
 // Return the config in a JSON String
@@ -263,6 +270,19 @@ function readCookie() {
 		return true;
 	}
 	return false;
+}
+
+// Randomize an array
+function randArray(array) {
+	var itemsLeft = array.length, tmpItem, randIndex;
+	while (itemsLeft !== 0) {
+		randIndex = Math.floor(Math.random() * itemsLeft);
+		itemsLeft -= 1;
+		tmpItem = array[itemsLeft];
+		array[itemsLeft] = array[randIndex];
+		array[randIndex] = tmpItem;
+	}
+	return array;
 }
 
 // Keystrokes
